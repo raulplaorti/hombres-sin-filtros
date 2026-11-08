@@ -53,6 +53,9 @@
     margin-bottom:20px;
     max-width:480px;
   }
+  .rd-dim-list{display:grid; gap:8px; margin:0 0 22px; max-width:480px;}
+  .rd-dim-item{display:flex; gap:12px; align-items:center; font-size:13.5px; line-height:1.45; color:var(--muted-on-dark);}
+  .rd-dim-item .rd-dim-chip{flex:0 0 104px; text-align:center;}
   .rd-dims-row{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px;}
   .rd-dim-chip{
     font-size:11.5px; font-weight:600; letter-spacing:.02em;
@@ -226,13 +229,14 @@
   <div class="rd-screen active" id="rdIntro">
     <span class="rd-tag">Test Sin filtros</span>
     <h1>Descubre en 5 minutos cuántos filtros llevas puestos — y qué primer paso puede ayudarte a vivir con menos.</h1>
-    <p>21 situaciones breves. Elige la que más se parezca a ti, sin juzgarte: no hay respuesta correcta. Al final verás tu mapa en 5 dimensiones, tu Índice de Filtro y una herramienta para empezar hoy.</p>
-    <div class="rd-dims-row">
-      <span class="rd-dim-chip" style="background:var(--ene)">Conmigo</span>
-      <span class="rd-dim-chip" style="background:var(--pre)">Aprobación</span>
-      <span class="rd-dim-chip" style="background:var(--rec)">Vínculos</span>
-      <span class="rd-dim-chip" style="background:var(--vin)">Mostrarme</span>
-      <span class="rd-dim-chip" style="background:var(--lim)">Límites</span>
+    <p>21 situaciones breves. Elige la que más se parezca a ti, sin juzgarte: no hay respuesta correcta. Al terminar recibirás tu mapa en 5 dimensiones, una herramienta para empezar hoy y tu <strong style="color:var(--paper)">Índice de Filtro</strong> (de 0 a 16): cuánto de lo que muestras o callas lo haces por costumbre o por miedo, y no porque tú lo elijas. Un «filtro» es eso que te pones para encajar o gustar.</p>
+    <p style="margin-bottom:10px">Las 5 dimensiones que explora:</p>
+    <div class="rd-dim-list">
+      <div class="rd-dim-item"><span class="rd-dim-chip" style="background:var(--ene)">Conmigo</span><span>cómo te hablas y si te sientes suficiente.</span></div>
+      <div class="rd-dim-item"><span class="rd-dim-chip" style="background:var(--pre)">Aprobación</span><span>cuánto pesan la mirada ajena, la comparación, el cuerpo y la edad.</span></div>
+      <div class="rd-dim-item"><span class="rd-dim-chip" style="background:var(--rec)">Vínculos</span><span>soledad y cercanía con quienes te rodean.</span></div>
+      <div class="rd-dim-item"><span class="rd-dim-chip" style="background:var(--vin)">Mostrarme</span><span>qué cuentas de ti y qué callas o disimulas.</span></div>
+      <div class="rd-dim-item"><span class="rd-dim-chip" style="background:var(--lim)">Límites</span><span>decir que no y expresar lo que quieres y no quieres.</span></div>
     </div>
     <div class="rd-position"><p>Es una herramienta de autoobservación, no una prueba diagnóstica ni terapia. Tus respuestas se quedan en tu navegador.</p></div>
     <div class="rd-tech-slot"></div>
@@ -282,6 +286,7 @@
         </div>
         <div class="rd-bar-track"><div class="rd-bar-fill" id="rdInerciaBarFill" style="background:var(--inercia)"></div></div>
         <p class="rd-inercia-text" id="rdInerciaText"></p>
+        <p class="rd-inercia-text" style="font-size:12.5px; color:var(--muted-on-dark); margin-top:10px">Qué mide: cuánto de lo que muestras o callas lo haces por costumbre o por miedo, y no porque tú lo elijas (de 0, casi siempre eliges tú, a 16, casi siempre aparentas o callas sin querer).</p>
       </div>
 
       <div class="rd-reading" id="rdReading"></div>
