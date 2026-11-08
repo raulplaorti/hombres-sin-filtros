@@ -1,0 +1,733 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-deep:#263D50;
+    --paper:#F8F7F3;
+    --paper-dim:#E8E2D8;
+    --line:#D8CFBB;
+    --ene:#D2A68C;
+    --pre:#B97A8E;
+    --rec:#8FB0A0;
+    --vin:#E0C27A;
+    --lim:#7FA3C2;
+    --inercia:#B85C38;
+    --ink-on-paper:#2A2620;
+    --muted-on-dark:#B9C7C2;
+  }
+  *{box-sizing:border-box;}
+  .rd-root{
+    font-family:'Work Sans', sans-serif;
+    background:var(--ink-deep);
+    color:var(--paper);
+    border-radius:18px;
+    overflow:hidden;
+    min-height:660px;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  .rd-eyebrow{
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted-on-dark);
+    font-weight:500;
+  }
+  h1,h2,h3{font-family:'Fraunces', serif; margin:0; font-weight:600;}
+
+  .rd-screen{display:none; flex-direction:column; flex:1; padding:36px 32px 28px;}
+  .rd-screen.active{display:flex;}
+  .rd-intro h1{font-size:clamp(24px,4vw,34px); line-height:1.18; color:var(--paper); margin:10px 0 6px; max-width:520px;}
+  .rd-intro .rd-tag{color:var(--ene); font-size:13.5px; font-weight:600; margin-bottom:4px;}
+  .rd-intro p{color:var(--muted-on-dark); font-size:14.5px; line-height:1.6; max-width:480px; margin:0 0 18px;}
+  .rd-intro .rd-position{
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:10px;
+    padding:14px 16px;
+    font-size:13px;
+    line-height:1.55;
+    color:var(--paper-dim);
+    margin-bottom:20px;
+    max-width:480px;
+  }
+  .rd-dims-row{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px;}
+  .rd-dim-chip{
+    font-size:11.5px; font-weight:600; letter-spacing:.02em;
+    padding:6px 12px; border-radius:100px; color:var(--ink-deep);
+  }
+  .rd-start-btn{
+    margin-top:auto; align-self:flex-start; background:var(--ene); color:var(--ink-deep);
+    border:none; font-family:'Work Sans', sans-serif; font-weight:600; font-size:15px;
+    padding:14px 26px; border-radius:100px; cursor:pointer; transition:transform .15s ease, background .2s ease;
+  }
+  .rd-start-btn:hover{transform:translateY(-1px); background:#DDB59E;}
+
+  .rd-progress-wrap{padding:18px 32px 0;}
+  .rd-progress-track{height:3px; background:rgba(255,255,255,.12); border-radius:2px; overflow:hidden;}
+  .rd-progress-fill{height:100%; background:var(--ene); width:0%; transition:width .4s ease;}
+  .rd-progress-label{font-size:12px; color:var(--muted-on-dark); margin-top:8px; letter-spacing:.04em;}
+
+  .rd-case-wrap{flex:1; display:flex; align-items:center; justify-content:center; padding:20px 24px 30px;}
+  .rd-card{
+    background:var(--paper); color:var(--ink-on-paper); border-radius:14px; padding:30px 28px;
+    max-width:560px; width:100%; box-shadow:0 20px 40px -18px rgba(0,0,0,.45);
+    opacity:0; transform:translateY(10px); animation:rdIn .38s ease forwards;
+  }
+  @keyframes rdIn{to{opacity:1; transform:translateY(0);}}
+  .rd-card-label{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8A7F68; font-weight:600; margin-bottom:10px;}
+  .rd-card p.rd-scenario{font-size:16.5px; line-height:1.55; margin:0 0 22px; color:var(--ink-on-paper);}
+  .rd-options{display:flex; flex-direction:column; gap:8px;}
+  .rd-option{
+    text-align:left; background:transparent; border:1px solid var(--line); color:var(--ink-on-paper);
+    padding:13px 16px; border-radius:10px; font-family:'Work Sans', sans-serif; font-size:14.5px;
+    line-height:1.45; cursor:pointer; transition:border-color .15s ease, background .15s ease;
+  }
+  .rd-option:hover{border-color:#8A7F68; background:var(--paper-dim);}
+  .rd-option.selected{border-color:var(--ene); background:#F1E3D8;}
+
+  .rd-results{padding:34px 32px 30px; overflow-y:auto;}
+  .rd-results h2{font-size:21px; color:var(--paper); margin:6px 0 18px;}
+
+  .rd-total-block{
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:12px;
+    padding:18px 20px; margin-bottom:18px;
+  }
+  .rd-total-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; flex-wrap:wrap; gap:6px;}
+  .rd-total-score{font-family:'Fraunces', serif; font-size:22px; color:var(--paper);}
+  .rd-total-band{font-size:13px; font-weight:600; padding:4px 10px; border-radius:100px; color:var(--ink-deep);}
+  .rd-bar-track{height:8px; background:rgba(255,255,255,.12); border-radius:6px; overflow:hidden;}
+  .rd-bar-fill{height:100%; border-radius:6px; transition:width .8s ease;}
+  .rd-total-text{font-size:13.5px; color:var(--paper-dim); margin-top:10px; line-height:1.55;}
+
+  .rd-radar-block{display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; margin-bottom:22px;}
+  .rd-radar-svg{flex:0 0 auto;}
+  .rd-legend{flex:1; min-width:220px; display:flex; flex-direction:column; gap:10px;}
+  .rd-legend-row{display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--paper-dim);}
+  .rd-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .rd-legend-name{flex:1;}
+  .rd-legend-pct{font-family:'Fraunces', serif; color:var(--paper); font-size:14px;}
+
+  .rd-inercia-block{
+    background:linear-gradient(135deg, rgba(184,92,56,.14), rgba(184,92,56,.04));
+    border:1px solid rgba(184,92,56,.35); border-radius:12px; padding:20px 22px; margin-bottom:22px;
+  }
+  .rd-inercia-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;}
+  .rd-inercia-title{font-family:'Fraunces', serif; font-size:16.5px; color:var(--paper);}
+  .rd-inercia-score{font-family:'Fraunces', serif; font-size:15px; color:var(--inercia);}
+  .rd-inercia-text{font-size:14px; line-height:1.6; color:var(--paper-dim); margin-top:8px;}
+
+  .rd-reading{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:20px 22px;}
+  .rd-reading h3{font-size:16px; color:var(--paper); margin-bottom:8px;}
+  .rd-reading p{font-size:14.5px; line-height:1.6; color:var(--paper-dim); margin:0;}
+
+  .rd-reflect{margin-top:26px;}
+  .rd-reflect label{display:block; font-family:'Fraunces', serif; font-size:16px; color:var(--paper); margin-bottom:10px;}
+  .rd-reflect textarea{
+    width:100%; min-height:70px; background:var(--paper); color:var(--ink-on-paper); border:none;
+    border-radius:10px; padding:12px 14px; font-family:'Work Sans', sans-serif; font-size:14px; resize:vertical;
+  }
+  .rd-cta{margin-top:22px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  .rd-cta-btn{
+    background:var(--ene); color:var(--ink-deep); border:none; font-weight:600; font-size:14.5px;
+    padding:13px 22px; border-radius:100px; cursor:pointer; font-family:'Work Sans', sans-serif;
+  }
+  .rd-cta-btn:hover{background:#DDB59E;}
+  .rd-cta-note{font-size:12.5px; color:var(--muted-on-dark);}
+  .rd-thanks{font-size:13.5px; color:var(--rec); display:none;}
+
+  .rd-position strong{color:var(--paper);}
+  .rd-position p{margin:8px 0 0; font-size:13px; line-height:1.55; color:var(--paper-dim);}
+  .rd-info{margin-top:22px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:20px 22px;}
+  .rd-info h3{font-size:16px; color:var(--paper); margin:0 0 8px;}
+  .rd-info h3.rd-h-next{margin-top:16px;}
+  .rd-info p, .rd-info li{font-size:14px; line-height:1.6; color:var(--paper-dim);}
+  .rd-info p{margin:0 0 8px;}
+  .rd-info ol{margin:0 0 10px; padding-left:20px;}
+  .rd-info .rd-safety{border-left:3px solid var(--ene); padding-left:12px;}
+  .rd-ficha{margin-top:26px; border-top:1px solid rgba(255,255,255,.12); padding-top:24px;}
+  .rd-ficha-lead{font-size:14px; line-height:1.6; color:var(--paper-dim); margin:0 0 14px;}
+  .rd-tabs{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; align-items:center;}
+  .rd-tabs-hint{width:100%; font-size:13px; color:var(--muted-on-dark);}
+  .rd-tab{border:1px solid rgba(255,255,255,.25); background:transparent; color:var(--paper); padding:7px 14px; border-radius:100px; font-family:'Work Sans', sans-serif; font-size:13px; cursor:pointer;}
+  .rd-tab.on{background:var(--ene); color:var(--ink-deep); border-color:var(--ene);}
+  .rd-tool{background:linear-gradient(135deg, rgba(210,166,140,.14), rgba(210,166,140,.04)); border:1px solid rgba(210,166,140,.35); border-radius:12px; padding:18px 20px; margin-bottom:18px;}
+  .rd-tool h3{font-size:16px; color:var(--paper); margin:0 0 6px;}
+  .rd-tool p, .rd-tool li{font-size:14px; line-height:1.6; color:var(--paper-dim); margin:0 0 6px;}
+  .rd-tool ul{margin:0 0 6px; padding-left:20px;}
+  .rd-tool .rd-quote{font-family:'Fraunces', serif; font-style:italic; color:var(--paper);}
+  .rd-tool .rd-note{font-size:12.5px; color:var(--muted-on-dark);}
+  .rd-signal{font-size:14px; color:var(--paper); background:rgba(255,255,255,.05); border-radius:8px; padding:10px 12px; margin-bottom:16px;}
+  .rd-field{margin-bottom:16px;}
+  .rd-field label{display:block; font-family:'Fraunces', serif; font-size:15px; color:var(--paper); margin-bottom:8px;}
+  .rd-field textarea{width:100%; min-height:64px; background:var(--paper); color:var(--ink-on-paper); border:none; border-radius:10px; padding:12px 14px; font-family:'Work Sans', sans-serif; font-size:14px; resize:vertical;}
+  .rd-matrix{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px;}
+  .rd-matrix .rd-field{margin-bottom:0;}
+  .rd-matrix label{font-size:13.5px;}
+  .rd-tech{margin-top:14px; font-size:13px; color:var(--paper-dim); max-width:520px;}
+  .rd-tech summary{cursor:pointer; color:var(--muted-on-dark); text-decoration:underline; text-underline-offset:3px; width:fit-content;}
+  .rd-tech summary:hover{color:var(--paper);}
+  .rd-tech-body{margin-top:10px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:14px 16px;}
+  .rd-tech-body h4{font-family:'Fraunces', serif; font-size:14.5px; color:var(--paper); margin:0 0 8px; font-weight:600;}
+  .rd-tech-body ul{margin:0; padding-left:18px;}
+  .rd-tech-body li{font-size:13px; line-height:1.55; color:var(--paper-dim); margin:0 0 7px;}
+  .rd-tech-body li strong{color:var(--paper); font-weight:600;}
+  .rd-case-tech{padding:0 24px 22px; display:flex; justify-content:center;}
+  .rd-case-tech .rd-tech{margin-top:0; width:100%;}
+  #rdIntro .rd-position{margin:2px 0 0; max-width:480px;}
+  #rdIntro .rd-position p{margin:0; font-size:13px; line-height:1.5; color:var(--muted-on-dark);}
+  .rd-book{border-color:rgba(246,241,231,.35);}
+  a#rdCtaBtn{background:#FFF8E8; color:var(--ink-deep); font-weight:700; font-size:15.5px; padding:15px 28px; transition:background .2s ease, transform .15s ease;
+    box-shadow:0 0 0 4px rgba(246,241,231,.22), 0 10px 26px -10px rgba(0,0,0,.6);}
+  a#rdCtaBtn:hover{background:#FFFFFF; transform:translateY(-1px);}
+  a.rd-cta-btn{display:inline-block; text-decoration:none; margin-top:6px;}
+  .rd-copy-msg{font-size:13px; color:var(--rec); display:none;}
+
+  @media (max-width:520px){
+    .rd-matrix{grid-template-columns:1fr;}
+    .rd-screen{padding:26px 18px 20px;}
+    .rd-case-wrap{padding:14px 8px 24px;}
+    .rd-card{padding:22px 18px;}
+    .rd-results{padding:26px 18px 24px;}
+    .rd-radar-block{gap:18px;}
+  }
+  @media (max-width:520px){
+    html, body{margin:0; background:var(--ink-deep);}
+    .rd-root{min-height:100vh; min-height:100dvh; border-radius:0;}
+    #rdIntro{padding:30px 22px 26px; justify-content:center;}
+    #rdIntro .rd-tag{font-size:14px;}
+    #rdIntro h1{font-size:28px; line-height:1.2; margin:12px 0 14px;}
+    #rdIntro p{font-size:16px; line-height:1.6; color:var(--muted-on-dark); margin:0 0 18px;}
+    #rdIntro .rd-position p{font-size:14px;}
+    .rd-dim-chip{font-size:13px; padding:7px 13px;}
+    .rd-start-btn{align-self:stretch; text-align:center; padding:17px 24px; font-size:17px; margin-top:22px;}
+    .rd-progress-label{font-size:13px;}
+    .rd-card-label{font-size:12px;}
+    .rd-card p.rd-scenario{font-size:19px; line-height:1.5;}
+    .rd-option{font-size:16.5px; padding:15px 16px;}
+    .rd-results h2{font-size:23px;}
+    .rd-total-score{font-size:26px;}
+    .rd-total-text, .rd-inercia-text, .rd-reading p, .rd-info p, .rd-info li, .rd-tool p, .rd-tool li, .rd-ficha-lead{font-size:15.5px;}
+    .rd-legend-row{font-size:15px;}
+    .rd-reflect label, .rd-field label{font-size:16.5px;}
+    .rd-reflect textarea, .rd-field textarea{font-size:16px;}
+    .rd-tech, .rd-tech-body li{font-size:14px;}
+    .rd-tab{font-size:14px; padding:9px 15px;}
+    .rd-cta-btn{font-size:16px;}
+    a#rdCtaBtn{display:block; text-align:center; font-size:16.5px; padding:17px 20px;}
+  }
+</style>
+
+<div class="rd-root" id="rdRoot">
+
+  <!-- INTRO -->
+  <div class="rd-screen active" id="rdIntro">
+    <span class="rd-tag">Test Sin filtros</span>
+    <h1>Descubre en 5 minutos cuántos filtros llevas puestos — y qué primer paso puede ayudarte a vivir con menos.</h1>
+    <p>21 situaciones breves. Elige la que más se parezca a ti, sin juzgarte: no hay respuesta correcta. Al final verás tu mapa en 5 dimensiones, tu Índice de Filtro y una herramienta para empezar hoy.</p>
+    <div class="rd-dims-row">
+      <span class="rd-dim-chip" style="background:var(--ene)">Conmigo</span>
+      <span class="rd-dim-chip" style="background:var(--pre)">Aprobación</span>
+      <span class="rd-dim-chip" style="background:var(--rec)">Vínculos</span>
+      <span class="rd-dim-chip" style="background:var(--vin)">Mostrarme</span>
+      <span class="rd-dim-chip" style="background:var(--lim)">Límites</span>
+    </div>
+    <div class="rd-position"><p>Es una herramienta de autoobservación, no una prueba diagnóstica ni terapia. Tus respuestas se quedan en tu navegador.</p></div>
+    <div class="rd-tech-slot"></div>
+    <button class="rd-start-btn" id="rdStartBtn">Empezar · 5 minutos →</button>
+  </div>
+
+  <!-- PROGRESS + CASE -->
+  <div id="rdCaseScreen" class="rd-screen" style="padding:0;">
+    <div class="rd-progress-wrap">
+      <div class="rd-progress-track"><div class="rd-progress-fill" id="rdProgressFill"></div></div>
+      <div class="rd-progress-label" id="rdProgressLabel">Situación 1 de 21</div>
+    </div>
+    <div class="rd-case-wrap">
+      <div class="rd-card" id="rdCard">
+        <div class="rd-card-label" id="rdCardLabel">Situación</div>
+        <p class="rd-scenario" id="rdScenarioText"></p>
+        <div class="rd-options" id="rdOptions"></div>
+      </div>
+    </div>
+    <div class="rd-case-tech"><div class="rd-tech-slot"></div></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="rd-screen" id="rdResults">
+    <div class="rd-results">
+      <span class="rd-eyebrow">Tu resultado</span>
+      <h2>Esto es lo que muestran tus respuestas</h2>
+
+      <div class="rd-total-block">
+        <div class="rd-total-top">
+          <span class="rd-total-score" id="rdTotalScore">-- / 80</span>
+          <span class="rd-total-band" id="rdTotalBand">--</span>
+        </div>
+        <div class="rd-bar-track"><div class="rd-bar-fill" id="rdTotalBarFill"></div></div>
+        <p class="rd-total-text" id="rdTotalText"></p>
+      </div>
+
+      <div class="rd-radar-block">
+        <div class="rd-radar-svg" id="rdRadarSvg"></div>
+        <div class="rd-legend" id="rdLegend"></div>
+      </div>
+
+      <div class="rd-inercia-block">
+        <div class="rd-inercia-top">
+          <span class="rd-inercia-title">Índice de Filtro</span>
+          <span class="rd-inercia-score" id="rdInerciaScore">-- / 16</span>
+        </div>
+        <div class="rd-bar-track"><div class="rd-bar-fill" id="rdInerciaBarFill" style="background:var(--inercia)"></div></div>
+        <p class="rd-inercia-text" id="rdInerciaText"></p>
+      </div>
+
+      <div class="rd-reading" id="rdReading"></div>
+
+      <div class="rd-info">
+        <h3>Cómo interpretar tus resultados</h3>
+        <p>Tu puntuación es una referencia para observarte, no una etiqueta sobre ti ni un diagnóstico.</p>
+        <p>Las dimensiones con más puntuación señalan dónde merece la pena detenerse con curiosidad. El Índice de Filtro refleja cuánto muestras o callas por costumbre o miedo en lugar de por elección. Tener filtros no es un fallo: todos los llevamos, y no todos son un problema. Lo importante es poder elegir cuándo ponerlos.</p>
+        <h3 class="rd-h-next">¿Qué puedes hacer ahora?</h3>
+        <ol>
+          <li>Fíjate en la señal que más te resuena.</li>
+          <li>Distingue qué filtras por elección y qué por miedo o costumbre.</li>
+          <li>Elige una acción pequeña y realista para esta semana.</li>
+        </ol>
+        <p class="rd-safety">Si sientes tristeza o ansiedad persistentes, un malestar que te desborda o alguna conducta que notas que se te va de las manos, no te limites a aplicar consejos: consulta con un profesional sanitario o de salud mental.</p>
+        <p>Este test es un punto de partida para conocerte mejor. No tienes que resolverlo todo por tu cuenta.</p>
+      </div>
+
+      <div class="rd-reflect">
+        <label for="rdReflectInput">Si pudieras dejar de llevar un solo filtro en los próximos tres meses, ¿cuál sería?</label>
+        <textarea id="rdReflectInput" placeholder="Escribe aquí (opcional, solo para ti)"></textarea>
+      </div>
+
+      <div class="rd-ficha" id="rdFicha">
+        <span class="rd-eyebrow">Tu ficha</span>
+        <h2>Mi primer paso para vivir con menos filtros</h2>
+        <p class="rd-ficha-lead" id="rdFichaLead"></p>
+        <div class="rd-tabs" id="rdTabs"></div>
+        <div class="rd-tool" id="rdTool"></div>
+        <div class="rd-signal" id="rdFichaSignal"></div>
+
+        <div class="rd-field"><label for="f_ocurre" id="l_ocurre">Qué está ocurriendo en mi caso</label>
+          <textarea id="f_ocurre" placeholder="Un ejemplo concreto y reciente."></textarea></div>
+
+        <div class="rd-matrix" id="rdMatrix">
+          <div class="rd-field"><label for="f_dep">Filtro por elección</label>
+            <textarea id="f_dep" placeholder="Lo que decido no contar o no mostrar."></textarea></div>
+          <div class="rd-field"><label for="f_inf">Filtro por miedo o costumbre</label>
+            <textarea id="f_inf" placeholder="Lo que callo o disimulo sin querer."></textarea></div>
+          <div class="rd-field"><label for="f_nodep">Quiero dejar de filtrar</label>
+            <textarea id="f_nodep" placeholder="Lo que me gustaría poder mostrar o decir."></textarea></div>
+        </div>
+
+        <div class="rd-field"><label for="f_accion">Mi acción realista para los próximos 7 días</label>
+          <textarea id="f_accion"></textarea></div>
+
+        <div class="rd-field" id="rdConvField"><label for="f_conv">Con quién o en qué conversación podría ser un poco más yo</label>
+          <textarea id="f_conv"></textarea></div>
+
+        <div class="rd-field"><label for="f_senal">Cómo sabré si me ayuda</label>
+          <textarea id="f_senal" placeholder="Una señal observable que revisaré dentro de una semana."></textarea></div>
+
+        <div class="rd-cta">
+          <button class="rd-cta-btn" id="rdCopyBtn" type="button">Copiar mi ficha</button>
+          <span class="rd-copy-msg" id="rdCopyMsg">Copiada. Pégala donde quieras guardarla.</span>
+        </div>
+        <p class="rd-cta-note" style="margin-top:10px">Lo que escribes se queda en tu navegador. No se envía a ningún sitio.</p>
+      </div>
+
+      <div class="rd-tech-slot" style="margin-bottom:6px"></div>
+
+      <div class="rd-info rd-book" style="margin-top:30px">
+        <h3>¿Quieres comentar tu resultado?</h3>
+        <p>Reserva una conversación de 30 minutos conmigo, sin compromiso, para revisar lo que ha salido en tu test y decidir qué primer paso tiene sentido para ti.</p>
+        <a class="rd-cta-btn" id="rdCtaBtn" href="https://calendly.com/raulplaorti/30min" target="_blank" rel="noopener">Reservar mi conversación de 30 minutos →</a>
+        <p class="rd-note" style="margin-top:14px;font-size:12.5px;color:var(--muted-on-dark)">Hombres sin filtros — Un proyecto de Raúl Plá</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const DIMS = {
+    CON:{name:'Conmigo', color:'#D2A68C', text:'Lo que más se repite es una relación exigente contigo: te hablas con dureza, cuesta sentirte suficiente y dejas tus necesidades para después. No es falta de valía; suele ser una voz aprendida que se puede ir suavizando.'},
+    APR:{name:'Aprobación', color:'#B97A8E', text:'Pesa mucho la mirada ajena: te comparas, ajustas lo que muestras para gustar y el cuerpo o la edad condicionan cómo te presentas. Querer reconocimiento es humano; el problema llega cuando todo depende de él.'},
+    VIN:{name:'Vínculos', color:'#8FB0A0', text:'Aparece una distancia entre la gente que te rodea y la cercanía que necesitas: soledad aun con vida social y pocas personas con quienes hablar de verdad. Conectar mejor suele empezar por una sola conversación honesta.'},
+    MOS:{name:'Mostrarme', color:'#E0C27A', text:'Se repite el recorte: adaptas, callas o disimulas partes de ti según con quién estés. Mostrarte o no es decisión tuya; lo que conviene mirar es cuándo eliges y cuándo callas por miedo.'},
+    LIM:{name:'Límites', color:'#7FA3C2', text:'Lo que más pesa es acomodarte: cuesta decir que no, expresar lo que quieres y no quieres, o dejar de aceptar lo que no te sienta bien. Poner un límite no aleja a nadie; cuida lo que sí quieres.'}
+  };
+  const RAW = [
+  ['CON','Cuando algo no me sale como esperaba, la voz con la que me hablo por dentro...',['Es amable, como la de un buen amigo.','Suele ser comprensiva, con alguna excepción.','A veces es bastante dura.','Suele ser exigente y crítica.','Casi siempre me trato peor de lo que trataría a nadie.']],
+  ['APR','Antes de mostrar algo mío (una foto, un plan, una opinión), pensar cómo me verán...',['Casi no lo pienso.','Lo pienso un momento, sin más.','A veces lo pienso más de la cuenta.','Con frecuencia ajusto lo que muestro para gustar.','Casi siempre elijo lo que muestro según la aprobación que espero.'],1],
+  ['VIN','Si esta noche necesitara hablar con alguien de verdad...',['Tengo a varias personas a quienes llamar.','Tengo a alguien, quizá a pocas personas.','Podría, pero me costaría pedirlo.','Dudaría de a quién llamar.','No sé a quién recurriría.']],
+  ['MOS','Con las personas de mi entorno, lo que cuento de mi vida afectiva y de cómo soy...',['Lo que quiero, sin esfuerzo.','Casi todo lo que quiero.','Lo selecciono según con quién esté.','Con frecuencia callo o adapto cosas que sí me importan.','Casi siempre muestro una versión recortada de mí.']],
+  ['LIM','Cuando me proponen un plan que no me apetece...',['Digo que no sin problema.','Casi siempre puedo decir que no.','A veces acepto por no quedar mal.','Suelo aceptar aunque no quiera.','Casi nunca digo que no.']],
+  ['CON','Sentirme suficiente tal como soy hoy...',['Me sale con naturalidad.','Casi siempre; algún día dudo.','Depende del día o de con quién esté.','Me cuesta; siento que debería ser más o mejor.','Casi nunca siento que sea suficiente.']],
+  ['APR','Cuando me comparo con otros hombres (cuerpo, éxito, vida social)...',['Casi nunca me comparo.','Rara vez, y se me pasa pronto.','A veces, y me deja mal sabor.','Con frecuencia, y me afecta.','Casi siempre me mido por lo que veo en otros.']],
+  ['VIN','Siento soledad, incluso estando rodeado de gente...',['Casi nunca.','Rara vez.','A veces.','Con frecuencia.','Casi siempre.']],
+  ['MOS','Con ciertas personas o en ciertos ambientes (trabajo, familia, planes), bajo el tono o disimulo cómo soy...',['Nunca.','Rara vez.','A veces.','Con frecuencia.','Casi siempre.'],1],
+  ['LIM','Lo que quiero y no quiero en una relación o un encuentro (afecto, tiempos, sexo)...',['Lo expreso con claridad.','Casi siempre lo expreso.','A veces me callo para no estropear el momento.','Con frecuencia no lo digo.','Casi nunca lo expreso; me adapto.']],
+  ['CON','Sobre lo que necesito de verdad (descanso, afecto, tiempo para mí)...',['Lo tengo claro y me lo concedo.','Casi siempre lo identifico.','A veces no sé bien qué necesito.','Con frecuencia lo dejo para después.','Hace tiempo que no me lo pregunto.']],
+  ['APR','Mi edad y mi cuerpo, en cómo creo que me ven...',['No condicionan cómo me muestro.','Algo, pero lo llevo bien.','A veces me hacen sentir en desventaja.','Con frecuencia pesan al relacionarme.','Pesan tanto que condicionan lo que hago o dejo de hacer.']],
+  ['VIN','Con la gente cercana, hablar de lo que de verdad me pasa...',['Me sale con confianza.','Con algunas personas, sí.','Me cuesta, salvo con muy pocas.','Casi siempre me quedo en lo superficial.','Prácticamente nunca lo hago.']],
+  ['MOS','Cuando no estoy bien, lo que dejo ver...',['Lo que siento, a quien me da confianza.','Casi siempre me abro con alguien.','A veces digo que estoy bien aunque no lo esté.','Suelo decir «todo bien».','Casi nadie sabe cómo estoy en realidad.'],1],
+  ['LIM','Cuando algo me incomoda de cómo me tratan...',['Lo digo con tranquilidad.','Casi siempre lo digo.','A veces lo dejo pasar.','Suelo callar y acumular.','Casi nunca digo nada, aunque me duela.']],
+  ['CON','Cuando me quedo a solas conmigo, sin planes ni pantallas...',['Estoy a gusto.','Estoy bien, tras un momento.','A veces busco algo que me distraiga.','Suelo llenar el silencio rápido.','Me incomoda tanto que casi lo evito.']],
+  ['APR','Cuando alguien me hace un cumplido o muestra interés por mí...',['Lo recibo con gusto y sin dudar.','Lo recibo bien, aunque me cueste un poco.','A veces pienso que será por cortesía.','Suelo quitarle importancia o desconfiar.','Necesito mucha confirmación para creérmelo, y no dura.']],
+  ['VIN','Mis vínculos afectivos (amistades, pareja, citas), hoy...',['Me nutren y me satisfacen.','Bastante bien, con algo que mejorar.','Hay cosas que echo de menos.','Echo de menos bastante más cercanía.','Siento que me falta lo esencial.']],
+  ['MOS','Distinguir entre elegir no contar algo y esconderlo por miedo...',['Lo tengo claro: elijo yo.','Casi siempre lo distingo.','A veces no sé cuál de las dos es.','Con frecuencia callo por miedo al juicio.','Casi siempre callo por miedo, aunque me pese.']],
+  ['LIM','Elegir cómo vivo (planes, ritmo, con quién, en qué empleo mi tiempo)...',['Siento que elijo yo.','La mayor parte, sí.','Mitad por decisión, mitad por inercia.','Gran parte responde a expectativas ajenas.','Casi todo responde a lo que se espera de mí.']],
+  [null,'Última pregunta, algo distinta: cuánto de lo que muestro cada día es lo que de verdad quiero mostrar...',['Casi todo.','La mayor parte.','Más o menos la mitad.','Bastante menos de la mitad.','Muy poco; casi siempre aparento.'],1]
+  ];
+  const CASES = RAW.map(r => ({dim:r[0], text:r[1], opts:r[2].map((t,v)=>({t:t,v:v})), inertia:!!r[3]}));
+
+  let current = 0;
+  const dimScores = {CON:0, APR:0, VIN:0, MOS:0, LIM:0};
+  let totalScore = 0;
+  let inerciaScore = 0;
+
+  const introScreen = document.getElementById('rdIntro');
+  const caseScreen = document.getElementById('rdCaseScreen');
+  const resultsScreen = document.getElementById('rdResults');
+  const progressFill = document.getElementById('rdProgressFill');
+  const progressLabel = document.getElementById('rdProgressLabel');
+  const cardLabel = document.getElementById('rdCardLabel');
+  const scenarioText = document.getElementById('rdScenarioText');
+  const optionsWrap = document.getElementById('rdOptions');
+  const card = document.getElementById('rdCard');
+
+  document.getElementById('rdStartBtn').addEventListener('click', () => {
+    introScreen.classList.remove('active');
+    caseScreen.classList.add('active');
+    renderCase();
+  });
+
+  function renderCase(){
+    const data = CASES[current];
+    cardLabel.textContent = 'Situación ' + (current+1);
+    scenarioText.textContent = data.text;
+    optionsWrap.innerHTML = '';
+    data.opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'rd-option';
+      btn.type = 'button';
+      btn.textContent = opt.t;
+      btn.addEventListener('click', () => selectOption(data, opt.v, btn));
+      optionsWrap.appendChild(btn);
+    });
+    progressFill.style.width = Math.round((current/CASES.length)*100) + '%';
+    progressLabel.textContent = 'Situación ' + (current+1) + ' de ' + CASES.length;
+    card.style.animation = 'none';
+    void card.offsetWidth;
+    card.style.animation = null;
+  }
+
+  function selectOption(data, value, btn){
+    Array.from(optionsWrap.children).forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+    if (data.dim){
+      dimScores[data.dim] += value;
+      totalScore += value;
+    }
+    if (data.inertia){
+      inerciaScore += value;
+    }
+    setTimeout(() => {
+      current += 1;
+      if (current < CASES.length){
+        renderCase();
+      } else {
+        progressFill.style.width = '100%';
+        progressLabel.textContent = 'Completado';
+        setTimeout(showResults, 350);
+      }
+    }, 260);
+  }
+
+  function showResults(){
+    caseScreen.classList.remove('active');
+    resultsScreen.classList.add('active');
+    buildTotal();
+    buildRadar();
+    buildLegend();
+    buildInercia();
+    buildReading();
+    buildCta();
+    buildFicha();
+  }
+
+  function buildCta(){
+    const q = document.querySelector('.rd-reflect label');
+    if (totalScore<=16) q.textContent = '¿Qué te ayuda ahora a ser tú, y cómo lo protegerías durante los próximos tres meses?';
+    else if (totalScore<=32) q.textContent = '¿Qué filtro de estos te gustaría aflojar antes de que pese más, durante los próximos tres meses?';
+    else q.textContent = 'Si pudieras dejar de llevar un solo filtro en los próximos tres meses, ¿cuál sería?';
+  }
+
+  const TOOLS = {
+    CON:{title:'La voz de un buen amigo', intro:'Esta semana, cuando te oigas ser duro contigo:',
+      items:['Anota la frase exacta que te dices.','Reescríbela como se la dirías a un buen amigo en tu misma situación.','Léela en voz alta una vez.'],
+      note:'No se trata de pensar en positivo, sino de hablarte con la justicia con que hablas a los demás.',
+      action:'Anoto una frase dura que me digo y la reescribo como se la diría a un amigo.', talk:'A quién de confianza podría contarle algo de lo que me exijo.'},
+    APR:{title:'Elegir sin público', intro:'Cuando notes que ajustas algo para gustar (una foto, un plan, una opinión), párate y anota:',
+      items:['Qué iba a mostrar o decir.','Qué elegiría si nadie fuera a verlo.','Qué pequeña versión de lo segundo puedo hacer hoy.'],
+      note:'Querer reconocimiento no es un fallo. Se trata de que no decida por ti.',
+      action:'Tres veces esta semana, anoto lo que iba a mostrar y lo que elegiría sin público.', talk:'Con quién me sentiría cómodo mostrándome sin ajustar nada.'},
+    VIN:{title:'Una conversación de verdad', intro:'Elige a una persona de confianza y prueba esta apertura:',
+      quote:'«Llevo un tiempo con ganas de hablar contigo de verdad, sin prisa. ¿Tienes un rato esta semana?»',
+      note:'Una conversación honesta pesa más que muchos planes. No hace falta contarlo todo: basta con empezar por una cosa.',
+      action:'Propongo esta semana ese rato a una persona de confianza.', talk:'Con quién me gustaría tener una conversación más honesta y qué le contaría primero.'},
+    MOS:{title:'Mapa de filtros: ¿elijo o escondo?', intro:'Es la herramienta central de tu ficha. Más abajo, clasifica lo que no muestras en tres grupos:',
+      items:['Lo que filtro por elección.','Lo que filtro por miedo o costumbre.','Lo que quiero dejar de filtrar.'],
+      note:'Autenticidad no es exposición: nadie tiene que contarlo todo. Se trata de que decidas tú.',
+      action:'Elijo una persona o un entorno y decido una cosa que dejaré de recortar esta semana.', talk:'Con quién podría ser un poco más yo, y en qué.'},
+    LIM:{title:'Un no pequeño', intro:'Prueba esta formulación esta semana con algo de bajo riesgo:',
+      quote:'«Gracias por pensar en mí. Esta vez prefiero no. Otro día, encantado.»',
+      note:'Un límite pequeño y amable también es práctica. No hace falta justificarte.',
+      action:'Digo un no pequeño esta semana ante un plan o petición que no me apetece.', talk:'Qué me gustaría poder decir con más claridad, y a quién.'},
+    NONE:{title:'Proteger lo que ya funciona', intro:'Tus señales son bajas. Lo útil ahora es reconocer y cuidar lo que te sostiene:',
+      items:['Qué personas, hábitos o espacios te permiten ser tú.','Qué podría ponerlos en riesgo.','Qué harías si cambia tu entorno.'], note:'',
+      action:'Elijo una persona o hábito que me sostiene y decido cómo cuidarlo esta semana.', talk:''}
+  };
+  let fichaKey = null, fichaTops = [];
+
+  function buildFicha(){
+    const order = ['CON','APR','VIN','MOS','LIM'];
+    const max = Math.max(...order.map(k=>dimScores[k]));
+    fichaTops = max<=2 ? ['NONE'] : order.filter(k=>dimScores[k]===max);
+    const hi = totalScore>=33, inH = inerciaScore>=9;
+    let lead;
+    if (!hi && inH) lead = 'Tu peso total de filtros es bajo, pero en algún terreno concreto aparentas más de lo que quieres: mira cuál y qué lo hace difícil.';
+    else if (hi && !inH) lead = 'Reconoces señales claras y sueles mostrarte como eres: elige una sola acción y evita querer cambiarlo todo de golpe.';
+    else if (hi && inH) lead = 'Hay bastantes filtros y también aparentas más de lo que quieres. Empieza por un entorno seguro, una persona de confianza y un paso pequeño.';
+    else lead = 'Tus señales son bajas y te muestras con naturalidad: lo más útil es reconocer y proteger lo que ya te funciona.';
+    document.getElementById('rdFichaLead').textContent = lead + ' (Lectura orientativa, no un diagnóstico.)';
+    const tabs = document.getElementById('rdTabs');
+    tabs.innerHTML = '';
+    if (fichaTops.length>1){
+      const hint = document.createElement('span');
+      hint.className = 'rd-tabs-hint';
+      hint.textContent = 'Varias señales empatan. Elige con cuál quieres trabajar ahora:';
+      tabs.appendChild(hint);
+      fichaTops.forEach(k => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'rd-tab'; b.textContent = DIMS[k].name; b.dataset.k = k;
+        b.addEventListener('click', () => applyTool(k));
+        tabs.appendChild(b);
+      });
+    }
+    applyTool(fichaTops[0]);
+  }
+
+  function applyTool(k){
+    fichaKey = k;
+    const t = TOOLS[k], none = (k==='NONE');
+    document.querySelectorAll('#rdTabs .rd-tab').forEach(b => b.classList.toggle('on', b.dataset.k===k));
+    let h = '<h3></h3><p></p>';
+    if (t.items) h += '<ul>' + t.items.map(()=>'<li></li>').join('') + '</ul>';
+    if (t.quote) h += '<p class="rd-quote"></p>';
+    if (t.note) h += '<p class="rd-note"></p>';
+    const box = document.getElementById('rdTool');
+    box.innerHTML = h;
+    box.querySelector('h3').textContent = t.title;
+    box.querySelector('p').textContent = t.intro;
+    if (t.items) box.querySelectorAll('li').forEach((li,i)=>{ li.textContent = t.items[i]; });
+    if (t.quote) box.querySelector('.rd-quote').textContent = t.quote;
+    if (t.note) box.querySelector('.rd-note').textContent = t.note;
+    document.getElementById('rdFichaSignal').textContent = none
+      ? 'Mi señal principal: ninguna destaca por ahora'
+      : 'Mi señal principal: ' + DIMS[k].name + ' (' + dimScores[k] + ' / 16)';
+    document.getElementById('l_ocurre').textContent = none ? 'Qué me está ayudando ahora' : 'Qué está ocurriendo en mi caso';
+    document.getElementById('rdMatrix').style.display = none ? 'none' : '';
+    document.getElementById('rdConvField').style.display = none ? 'none' : '';
+    document.getElementById('f_accion').placeholder = 'Por ejemplo: ' + t.action;
+    document.getElementById('f_conv').placeholder = t.talk;
+  }
+
+  function copyFicha(){
+    const v = id => document.getElementById(id).value.trim();
+    const L = ['MI PRIMER PASO PARA VIVIR CON MENOS FILTROS','Test Sin filtros · Hombres sin filtros','',
+      'Filtros: ' + totalScore + ' / 80 · Índice de Filtro: ' + inerciaScore + ' / 16',
+      document.getElementById('rdFichaSignal').textContent];
+    const add = (t,id) => { const x = v(id); if (x) L.push('', t + ':', x); };
+    add(document.querySelector('.rd-reflect label').textContent,'rdReflectInput');
+    if (fichaKey==='NONE'){ add('Qué me está ayudando ahora','f_ocurre'); }
+    else {
+      add('Qué está ocurriendo en mi caso','f_ocurre');
+      add('Filtro por elección','f_dep'); add('Filtro por miedo o costumbre','f_inf'); add('Quiero dejar de filtrar','f_nodep');
+    }
+    add('Mi acción realista para los próximos 7 días','f_accion');
+    if (fichaKey!=='NONE') add('Con quién o en qué conversación podría ser un poco más yo','f_conv');
+    add('Cómo sabré si me ayuda','f_senal');
+    const text = L.join('\n');
+    const done = () => { const m = document.getElementById('rdCopyMsg'); m.style.display = 'inline'; setTimeout(()=>{ m.style.display = 'none'; }, 3000); };
+    const fallback = () => {
+      const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+      ta.select(); try { document.execCommand('copy'); done(); } catch(e) {} document.body.removeChild(ta);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+    else fallback();
+  }
+  document.getElementById('rdCopyBtn').addEventListener('click', copyFicha);
+
+  const TECH = [
+    ['Qué es', 'Una herramienta propia de autoobservación creada por Raúl Plá para el proyecto Hombres sin filtros. No es una prueba diagnóstica ni terapia.'],
+    ['Cómo usar las puntuaciones', 'Son orientativas. Los tramos y el Índice de Filtro son criterios propios, no baremos oficiales, y no sirven para diagnosticar ni etiquetar a nadie.'],
+    ['Validación', 'No es un test validado: no ha pasado por un proceso de validación psicométrica ni equivale a ningún instrumento científico existente.'],
+    ['Tus datos', 'Tus respuestas, tus resultados y lo que escribes en la ficha se quedan en tu navegador. No se envían a Raúl Plá. Tú decides si quieres compartirlos en una conversación posterior. Si reservas una cita, los datos de la reserva los gestiona Calendly.']
+  ];
+  document.querySelectorAll('.rd-tech-slot').forEach(slot => {
+    const d = document.createElement('details');
+    d.className = 'rd-tech';
+    const sm = document.createElement('summary');
+    sm.textContent = 'Ficha técnica del test';
+    const body = document.createElement('div');
+    body.className = 'rd-tech-body';
+    const ul = document.createElement('ul');
+    TECH.forEach(([t,x]) => {
+      const li = document.createElement('li');
+      const st = document.createElement('strong'); st.textContent = t + '. ';
+      li.appendChild(st); li.appendChild(document.createTextNode(x));
+      ul.appendChild(li);
+    });
+    body.appendChild(ul);
+    d.appendChild(sm); d.appendChild(body);
+    slot.appendChild(d);
+  });
+
+  function getTotalBand(t){
+    if (t<=16) return {label:'Filtros ligeros', color:'#8FB0A0', text:'Hoy te muestras con bastante naturalidad y te tratas con razonable amabilidad. Merece la pena cuidar lo que ya te funciona.'};
+    if (t<=32) return {label:'Algunos filtros', color:'#E0C27A', text:'Hay situaciones en las que ajustas, callas o te exiges más de la cuenta. Es un buen momento para mirarlas con curiosidad.'};
+    if (t<=48) return {label:'Filtros frecuentes', color:'#D2A68C', text:'Varios filtros aparecen con regularidad. No es un fallo tuyo: son costumbres aprendidas que se pueden ir aflojando.'};
+    if (t<=64) return {label:'Filtros muy presentes', color:'#B97A8E', text:'Los filtros ocupan buena parte de tu día a día. Merece una atención real, y no tienes que resolverlo solo.'};
+    return {label:'Filtros por todas partes', color:'#8B3A3A', text:'Lo que reconoces es intenso y sostenido. Aparentar y contenerse tanto cansa, y puedes buscar apoyo para empezar a aflojar.'};
+  }
+
+  function buildTotal(){
+    const band = getTotalBand(totalScore);
+    document.getElementById('rdTotalScore').textContent = totalScore + ' / 80';
+    const bandEl = document.getElementById('rdTotalBand');
+    bandEl.textContent = band.label;
+    bandEl.style.background = band.color;
+    document.getElementById('rdTotalBarFill').style.width = Math.round((totalScore/80)*100) + '%';
+    document.getElementById('rdTotalBarFill').style.background = band.color;
+    document.getElementById('rdTotalText').textContent = band.text;
+  }
+
+  function buildRadar(){
+    const order = ['CON','APR','VIN','MOS','LIM'];
+    const size = 400, cx = size/2, cy = size/2, R = 108;
+    const angleFor = i => (-90 + i*72) * Math.PI/180;
+    const maxScore = 16;
+
+    function pt(i, frac){
+      const a = angleFor(i);
+      const r = R * frac;
+      return [cx + r*Math.cos(a), cy + r*Math.sin(a)];
+    }
+
+    let rings = '';
+    [0.25,0.5,0.75,1].forEach(f => {
+      let pts = order.map((_,i)=>pt(i,f).join(',')).join(' ');
+      rings += `<polygon points="${pts}" fill="none" stroke="rgba(255,255,255,.14)" stroke-dasharray="3,4" stroke-width="1"/>`;
+    });
+
+    let axes = '', labels = '';
+    order.forEach((k,i) => {
+      const [x,y] = pt(i,1);
+      axes += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,.16)" stroke-width="1"/>`;
+      const [lx,ly] = pt(i,1.12);
+      const anchor = i===1 ? 'start' : i===4 ? 'end' : 'middle';
+      const ly2 = (i===2 || i===3) ? ly+8 : ly;
+      labels += `<text x="${lx}" y="${ly2}" fill="#B9C7C2" font-size="11" font-family="Work Sans, sans-serif" text-anchor="${anchor}" dominant-baseline="middle">${DIMS[k].name}</text>`;
+    });
+
+    const dataPts = order.map((k,i) => {
+      const frac = Math.min(dimScores[k]/maxScore, 1);
+      return pt(i, Math.max(frac,0.05));
+    });
+    const dataPolygon = dataPts.map(p=>p.join(',')).join(' ');
+    const maxS = Math.max(...order.map(k=>dimScores[k]));
+    const radarColor = maxS<=2 ? '#B9C7C2' : DIMS[order.find(k=>dimScores[k]===maxS)].color;
+
+    const svg = `
+      <svg width="${size}" height="${size}" style="max-width:100%;height:auto" viewBox="0 0 ${size} ${size}">
+        ${rings}
+        ${axes}
+        <polygon points="${dataPolygon}" fill="${radarColor}22" stroke="${radarColor}" stroke-width="2" stroke-linejoin="round"
+          style="opacity:0; animation: rdFadeIn .7s ease .15s forwards;"/>
+        ${dataPts.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="4" fill="${DIMS[order[i]].color}"/>`).join('')}
+        ${labels}
+      </svg>
+      <style>@keyframes rdFadeIn{to{opacity:1;}}</style>
+    `;
+    document.getElementById('rdRadarSvg').innerHTML = svg;
+  }
+
+  function buildLegend(){
+    const order = ['CON','APR','VIN','MOS','LIM'];
+    const legend = document.getElementById('rdLegend');
+    legend.innerHTML = '';
+    order.slice().sort((a,b)=>dimScores[b]-dimScores[a]).forEach(k => {
+      const row = document.createElement('div');
+      row.className = 'rd-legend-row';
+      row.innerHTML = `<span class="rd-dot" style="background:${DIMS[k].color}"></span>
+        <span class="rd-legend-name">${DIMS[k].name}</span>
+        <span class="rd-legend-pct">${dimScores[k]} / 16</span>`;
+      legend.appendChild(row);
+    });
+  }
+
+  function getInerciaBand(s){
+    if (s<=4) return 'Te muestras con bastante naturalidad: lo que enseñas se parece a lo que eres y quieres.';
+    if (s<=8) return 'Aparece algo de recorte, sobre todo según el entorno, pero en general eliges tú.';
+    if (s<=12) return 'Aparece un patrón de aparentar o callar aunque no quieras, sobre todo con ciertas personas o en ciertos sitios.';
+    return 'Aparece con fuerza aparentar o callar aunque no quieras. No es debilidad: suele haber miedos aprendidos, entornos poco seguros o la costumbre de protegerte. Vale la pena explorar qué hay detrás.';
+  }
+
+  function buildInercia(){
+    document.getElementById('rdInerciaScore').textContent = inerciaScore + ' / 16';
+    document.getElementById('rdInerciaBarFill').style.width = Math.round((inerciaScore/16)*100) + '%';
+    document.getElementById('rdInerciaText').textContent = getInerciaBand(inerciaScore);
+  }
+
+  const MID = {CON:'a veces te hablas con más dureza de la necesaria o dejas tus necesidades para después.',APR:'a veces la mirada ajena o la comparación pesan más de lo que te gustaría.',VIN:'a veces echas de menos más cercanía o alguien con quien hablar de verdad.',MOS:'a veces recortas o callas partes de ti según con quién estés.',LIM:'a veces te cuesta decir que no o expresar lo que quieres.'};
+  const DIMS_MID = {};
+  Object.keys(MID).forEach(k => { DIMS_MID[k] = 'Es donde primero se nota el roce: ' + MID[k] + ' Todavía no es un patrón fuerte, pero conviene mirarlo a tiempo.'; });
+
+  function buildReading(){
+    const order = ['CON','APR','VIN','MOS','LIM'];
+    const max = Math.max(...order.map(k=>dimScores[k]));
+    const tops = order.filter(k=>dimScores[k]===max);
+    const names = tops.map(k=>DIMS[k].name);
+    const list = names.length>1 ? names.slice(0,-1).join(', ')+' y '+names[names.length-1] : names[0];
+    let title, body;
+    if (max<=2){
+      title = 'Lo que muestran tus respuestas';
+      body = 'Ninguna dimensión destaca: no aparecen filtros relevantes. Lo útil ahora es cuidar lo que ya te permite ser tú y volver a mirarlo si cambia tu entorno.';
+    } else if (max<=7){
+      title = 'Dónde empieza a notarse';
+      body = tops.length===1
+        ? DIMS[tops[0]].name+': '+DIMS_MID[tops[0]]
+        : 'Las señales aún son suaves y están repartidas, con algo más de peso en '+list+'. Todavía no es un patrón fuerte, pero conviene mirarlo a tiempo.';
+    } else {
+      title = 'Lo que más se repite';
+      body = tops.length===1
+        ? DIMS[tops[0]].text
+        : tops.length===2
+          ? DIMS[tops[0]].text+' A la vez, '+DIMS[tops[1]].text.charAt(0).toLowerCase()+DIMS[tops[1]].text.slice(1)
+          : 'Varias dimensiones empatan en lo más alto ('+list+'). Los filtros no se concentran en un solo punto: están repartidos por varias áreas de tu vida.';
+    }
+    document.getElementById('rdReading').innerHTML = '<h3></h3><p></p>';
+    document.querySelector('#rdReading h3').textContent = title;
+    document.querySelector('#rdReading p').textContent = body;
+  }
+
+})();
+</script>
